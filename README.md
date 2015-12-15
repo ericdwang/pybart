@@ -1,11 +1,13 @@
 # pybart
-Real time BART (Bay Area Rapid Transit) information in your terminal!
+Real time BART ([Bay Area Rapid Transit](https://www.bart.gov/)) information
+in your terminal!
 
 ![Screenshot](screenshot.png)
 
 ## Features
 - Real time estimates and service advisories
-- curses based TUI with auto-refreshing
+- [Curses-based](https://en.wikipedia.org/wiki/Curses_(programming_library))
+  TUI with auto-refreshing
 - View multiple stations at the same time
 - Ability to configure a default set of stations
 
@@ -37,8 +39,8 @@ Real time BART (Bay Area Rapid Transit) information in your terminal!
 ## Configuration
 The following (optional) environment variables can be used to configure pybart:
 
-- `BART_STATIONS` - a comma-separated string (e.g. `mcar,embr,cols`)
-  specifying the default stations to use when running `bart` with no arguments
+- `BART_STATIONS` - a comma-separated string (e.g. `mcar,embr,cols`) specifying
+  the default stations to use when running `bart` with no arguments.
 - `BART_API_KEY` - the BART API key to use when fetching information. A public
   one is used by default, but you can get your own
   [here](http://api.bart.gov/api/register.aspx).
