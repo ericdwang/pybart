@@ -81,10 +81,10 @@ def draw():
         for destination, estimates in departures:
             y += 1
             window.addstr(y, 0, destination)
+            x = window.SPACING
 
             # Display all estimates for a destination on the same line
-            for i, estimate in enumerate(estimates):
-                x = (i + 1) * window.SPACING
+            for i, estimate in enumerate(estimates, start=1):
                 window.addstr(y, x, '# ', color_name=estimate.color)
                 x += 2
 
@@ -97,7 +97,12 @@ def draw():
                 x += len(length)
 
                 # Clear the space between estimates
-                window.addstr(y, x, ' ' * ((i + 2) * window.SPACING - x))
+                space = (i + 1) * window.SPACING - x
+                window.addstr(y, x, ' ' * space)
+                x += space
+
+            # Clear the rest of the line
+            window.addstr(y, x, ' ' * (window.WIDTH - x))
 
     # Display help text at the bottom
     window.clear_lines(y + 1)
