@@ -98,11 +98,14 @@ def draw():
 
                 # Clear the space between estimates
                 space = (i + 1) * window.SPACING - x
-                window.addstr(y, x, ' ' * space)
-                x += space
+                if space > 0:
+                    window.addstr(y, x, ' ' * space)
+                    x += space
 
             # Clear the rest of the line
-            window.addstr(y, x, ' ' * (window.WIDTH - x))
+            remaining = window.WIDTH - x
+            if remaining > 0:
+                window.addstr(y, x, ' ' * remaining)
 
     # Display help text at the bottom
     window.clear_lines(y + 1)
