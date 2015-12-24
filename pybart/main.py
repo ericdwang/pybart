@@ -5,7 +5,6 @@ import pybart
 from pybart import settings
 from pybart.api import BART
 from pybart.utils import Window
-from pybart.utils import exit_on_error
 
 
 # Initialize BART API
@@ -20,7 +19,12 @@ for argument in arguments:
         elif argument == '-v' or argument == '--version':
             print(pybart.__version__)
         elif argument == '-l' or argument == '--list':
-            stations = exit_on_error(bart.get_stations, end_curses=False)
+            try:
+                stations = bart.get_stations()
+            except RuntimeError as error:
+                print(error)
+                exit(1)
+
             for station in stations:
                 print('{abbr} - {name}'.format(
                     abbr=station[0], name=station[1]))
@@ -59,7 +63,7 @@ def draw():
         time=datetime.now().strftime('%I:%M:%S %p')))
 
     # Display advisories (if any)
-    advisories = exit_on_error(bart.get_advisories)
+    advisories = bart.get_advisories()
     for advisory in advisories:
         window.clear_lines(y + 1)
         y += 2
@@ -73,8 +77,7 @@ def draw():
     for station_abbr in arguments:
         window.clear_lines(y + 1)
         y += 2
-        station, departures = exit_on_error(
-            bart.get_departures, args=(station_abbr,))
+        station, departures = bart.get_departures(station_abbr)
         window.addstr(y, 0, station, bold=True)
 
         # Display all destinations for a station
@@ -120,7 +123,13 @@ def main():
     char = -1
 
     while char != ord('q'):
-        draw()
+        try:
+            draw()
+        except RuntimeError as error:
+            window.endwin()
+            print(error)
+            exit(1)
+
         char = window.getch()
 
     window.endwin()

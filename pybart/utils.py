@@ -1,25 +1,6 @@
 import curses
 
 
-def exit_on_error(
-        function, end_curses=True, error_message='', args=(), kwargs={}):
-    """Call a function, ending the program and displaying an error if one
-    occurs.
-    """
-    try:
-        return function(*args, **kwargs)
-    except Exception as error:
-        if end_curses:
-            curses.endwin()
-
-        if error_message:
-            print(error_message)
-        else:
-            print(str(error))
-
-        exit(1)
-
-
 class Window(object):
     """Wrapper for the curses module."""
     COLOR_ORANGE = 0
@@ -74,9 +55,10 @@ class Window(object):
         if bold:
             color |= curses.A_BOLD
 
-        exit_on_error(
-            self.window.addstr, error_message='Terminal too small.',
-            args=(y, x, string, color))
+        try:
+            self.window.addstr(y, x, string, color)
+        except curses.error:
+            raise RuntimeError('Terminal too small.')
 
     def center(self, y, text):
         """Center the text in bold at a specified location."""
