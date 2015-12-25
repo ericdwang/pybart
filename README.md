@@ -1,4 +1,9 @@
 # pybart
+[![Version](https://img.shields.io/pypi/v/pybart.svg)](https://pypi.python.org/pypi/pybart)
+[![Downloads](https://img.shields.io/pypi/dm/pybart.svg)](https://pypi.python.org/pypi/pybart)
+![Python versions](https://img.shields.io/pypi/pyversions/pybart.svg)
+[![License](https://img.shields.io/pypi/l/pybart.svg)](LICENSE)
+
 Real time BART ([Bay Area Rapid Transit](https://www.bart.gov/)) information
 in your terminal!
 
