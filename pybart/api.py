@@ -5,6 +5,7 @@ except ImportError:
     from urllib.error import URLError
     from urllib.request import urlopen
 
+import errno
 from collections import namedtuple
 from xml.etree import cElementTree
 
@@ -40,7 +41,10 @@ class BART(object):
             response = urlopen(url)
             root = cElementTree.fromstring(response.read())
             response.close()
-        except URLError:
+        except URLError as error:
+            # Treat interrupted signal calls as warnings
+            if error.reason.errno == errno.EINTR:
+                raise RuntimeWarning
             raise RuntimeError('No Internet connection.')
 
         try:

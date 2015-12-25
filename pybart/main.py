@@ -83,8 +83,9 @@ def draw():
         # Display all destinations for a station
         for destination, estimates in departures:
             y += 1
-            window.addstr(y, 0, destination)
-            x = window.SPACING
+            window.addstr(y, 0, destination + ' ' * (
+                window.spacing - len(destination)))
+            x = window.spacing
 
             # Display all estimates for a destination on the same line
             for i, estimate in enumerate(estimates, start=1):
@@ -100,13 +101,13 @@ def draw():
                 x += len(length)
 
                 # Clear the space between estimates
-                space = (i + 1) * window.SPACING - x
+                space = (i + 1) * window.spacing - x
                 if space > 0:
                     window.addstr(y, x, ' ' * space)
                     x += space
 
             # Clear the rest of the line
-            remaining = window.WIDTH - x
+            remaining = window.width - x
             if remaining > 0:
                 window.addstr(y, x, ' ' * remaining)
 
@@ -120,11 +121,13 @@ def draw():
 
 def main():
     """Keep running until 'q' is pressed to exit or an error occurs."""
-    char = -1
+    char = ''
 
-    while char != ord('q'):
+    while char != 'q':
         try:
             draw()
+        except RuntimeWarning:
+            pass
         except RuntimeError as error:
             window.endwin()
             print(error)

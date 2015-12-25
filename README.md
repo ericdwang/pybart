@@ -7,7 +7,7 @@ in your terminal!
 ## Features
 - Real time estimates and service advisories
 - [Curses-based](https://en.wikipedia.org/wiki/Curses_(programming_library))
-  TUI with auto-refreshing
+  TUI with auto-refreshing and resizing
 - View multiple stations at the same time
 - Ability to configure a default set of stations
 
