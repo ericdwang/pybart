@@ -14,7 +14,9 @@ in your terminal!
 - [Curses-based](https://en.wikipedia.org/wiki/Curses_(programming_library))
   TUI with auto-refreshing and resizing
 - View multiple stations at the same time
+- Colors indicating transit lines, estimate times, and train lengths
 - Ability to configure a default set of stations
+- No dependencies; built with only standard libraries
 
 ## Requirements
 - Python 2.6+ or Python 3.0+ with the `curses` module installed (i.e. not

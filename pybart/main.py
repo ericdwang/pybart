@@ -56,6 +56,25 @@ window = Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS)
 
 def draw():
     """Draw the information on the terminal."""
+    def get_minutes_color(minutes):
+        """Get the color to use for the minutes estimate."""
+        try:
+            minutes = int(minutes.split()[0])
+            if minutes <= 5:
+                return 'RED'
+            elif minutes <= 10:
+                return 'YELLOW'
+        except ValueError:
+            return 'RED'
+
+    def get_length_color(length):
+        """Get the color to use for the train length."""
+        length = int(length)
+        if length < 6:
+            return 'YELLOW'
+        elif length >= 8:
+            return 'GREEN'
+
     y = 0
 
     # Display the current time
@@ -93,11 +112,13 @@ def draw():
                 x += 2
 
                 minutes = estimate.minutes + ' '
-                window.addstr(y, x, minutes, bold=True)
+                color = get_minutes_color(estimate.minutes)
+                window.addstr(y, x, minutes, color_name=color, bold=True)
                 x += len(minutes)
 
                 length = '({length} car)'.format(length=estimate.length)
-                window.addstr(y, x, length)
+                color = get_length_color(estimate.length)
+                window.addstr(y, x, length, color_name=color)
                 x += len(length)
 
                 # Clear the space between estimates
