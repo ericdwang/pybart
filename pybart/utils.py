@@ -15,11 +15,12 @@ class Window(object):
         self.total_columns = total_columns
         self.window = curses.initscr()
 
-        # Initialize colors with red, green, yellow, and blue
+        # Initialize colors with red, green, yellow, blue, and white
         curses.start_color()
         curses.use_default_colors()
         for i in range(1, 5):
             curses.init_pair(i, i, -1)
+        curses.init_pair(7, 7, -1)
 
         # Use the orange color if the terminal supports it, and magenta
         # otherwise
