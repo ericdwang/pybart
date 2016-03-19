@@ -72,9 +72,13 @@ class Window(object):
         center = (self.width - text_length) // 2
         text_end = center + text_length
 
-        self.addstr(y, 0, ' ' * center)
-        self.addstr(y, center, text, bold=True)
-        self.addstr(y, text_end, ' ' * (self.width - text_end))
+        centered_text = ' ' * center + text + ' ' * (self.width - text_end)
+        self.addstr(y, 0, centered_text, bold=True)
+
+    def fill_line(self, y, text, *args, **kwargs):
+        """Add the text and fill the rest of the line with whitespace."""
+        self.addstr(
+            y, 0, text + ' ' * (self.width - len(text)), *args, **kwargs)
 
     def clear_lines(self, y, lines=1):
         """Clear the specified lines."""

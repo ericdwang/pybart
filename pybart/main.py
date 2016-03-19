@@ -96,14 +96,14 @@ def draw():
         wrapper.width = window.width
         for line in wrapper.wrap(text):
             y += 1
-            window.addstr(y, 0, line, color_name='RED', bold=True)
+            window.fill_line(y, line, color_name='RED', bold=True)
 
     # Display stations
     for station_abbr in arguments:
         window.clear_lines(y + 1)
         y += 2
         station, departures = bart.get_departures(station_abbr)
-        window.addstr(y, 0, station, bold=True)
+        window.fill_line(y, station, bold=True)
 
         # Display all destinations for a station
         for destination, estimates in departures:
@@ -140,7 +140,7 @@ def draw():
 
     # Display help text at the bottom
     window.clear_lines(y + 1)
-    window.addstr(y + 2, 0, 'Press \'q\' to quit.')
+    window.fill_line(y + 2, 'Press \'q\' to quit.')
 
     # Clear the bottom 2 lines in case rows were moved up
     window.clear_lines(y + 3, lines=2)
