@@ -1,5 +1,6 @@
 import sys
 from datetime import datetime
+from textwrap import TextWrapper
 
 import pybart
 from pybart import settings
@@ -52,6 +53,7 @@ if not arguments:
 
 # Initialize window
 window = Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS)
+wrapper = TextWrapper()
 
 
 def draw():
@@ -85,12 +87,16 @@ def draw():
     advisories = bart.get_advisories()
     for advisory in advisories:
         window.clear_lines(y + 1)
-        y += 2
-        window.addstr(y, 0, '{type} ({posted}) - {sms_text}'.format(
-            posted=advisory.posted,
-            type=advisory.type,
-            sms_text=advisory.sms_text,
-        ), color_name='RED', bold=True)
+        y += 1
+
+        text = '{type} ({posted}) - {sms_text}'.format(
+            posted=advisory.posted, type=advisory.type,
+            sms_text=advisory.sms_text)
+
+        wrapper.width = window.width
+        for line in wrapper.wrap(text):
+            y += 1
+            window.addstr(y, 0, line, color_name='RED', bold=True)
 
     # Display stations
     for station_abbr in arguments:
