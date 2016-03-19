@@ -10,9 +10,9 @@ setup(
     author='Eric Wang',
     author_email='gnawrice@gmail.com',
     url='https://github.com/ericdwang/pybart',
-    packages=('pybart',),
-    entry_points={'console_scripts': ('bart = pybart.main:main',)},
-    classifiers=(
+    packages=['pybart'],
+    entry_points={'console_scripts': ['bart = pybart.main:main']},
+    classifiers=[
         'Environment :: Console :: Curses',
         'Intended Audience :: End Users/Desktop',
         'License :: OSI Approved :: BSD License',
@@ -21,7 +21,7 @@ setup(
         'Operating System :: POSIX :: Linux',
         'Programming Language :: Python :: 2',
         'Programming Language :: Python :: 3',
-    ),
+    ],
     license='BSD 3-Clause',
-    keywords=('bart', 'bay', 'area', 'rapid', 'transit'),
+    keywords=['bart', 'bay', 'area', 'rapid', 'transit'],
 )
