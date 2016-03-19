@@ -56,7 +56,7 @@ window = Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS)
 wrapper = TextWrapper()
 
 
-def draw():
+def draw(prev_lines):
     """Draw the information on the terminal."""
     def get_minutes_color(minutes):
         """Get the color to use for the minutes estimate."""
@@ -142,17 +142,22 @@ def draw():
     window.clear_lines(y + 1)
     window.fill_line(y + 2, 'Press \'q\' to quit.')
 
-    # Clear the bottom 2 lines in case rows were moved up
-    window.clear_lines(y + 3, lines=2)
+    # Clear the bottom lines that contained text from the previous draw
+    y = y + 3
+    window.clear_lines(y, lines=prev_lines - y)
+
+    # Return the number of lines drawn, excluding cleared lines at the bottom
+    return y
 
 
 def main():
     """Keep running until 'q' is pressed to exit or an error occurs."""
     char = ''
+    prev_lines = 0
 
     while char != 'q':
         try:
-            draw()
+            prev_lines = draw(prev_lines)
         except RuntimeWarning:
             pass
         except RuntimeError as error:
