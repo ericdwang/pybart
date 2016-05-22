@@ -30,16 +30,20 @@ in your terminal!
 `pip install pybart`
 
 ## Usage
-    Usage: bart [OPTION]... [STN]...
-    Display real time estimates about the STNs
-    (using the BART_STATIONS environment variable if not specified).
+    usage: bart [-h] [-l] [-v] [STN [STN ...]]
 
-    Options
+    Display real time BART estimates.
+
+    positional arguments:
+      STN            abbreviation of station to look up (default: BART_STATIONS
+                     environment variable)
+
+    optional arguments:
+      -h, --help     show this help message and exit
       -l, --list     print list of station abbreviations and exit
-      -h, --help     display this help and exit
-      -v, --version  output version information and exit
+      -v, --version  show program's version number and exit
 
-    Examples
+    examples:
       bart mcar       get estimates for the MacArthur station
       bart embr cols  get estimates for the Embarcadero and Coliseum stations
 

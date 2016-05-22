@@ -1,4 +1,4 @@
-import sys
+import argparse
 from datetime import datetime
 from textwrap import TextWrapper
 
@@ -11,44 +11,45 @@ from pybart.utils import Window
 # Initialize BART API
 bart = BART(settings.BART_API_KEY or settings.DEFAULT_API_KEY)
 
-# Parse command line arguments
-arguments = sys.argv[1:]
-for argument in arguments:
-    if argument.startswith('-'):
-        if argument == '-h' or argument == '--help':
-            print(settings.USAGE_TEXT)
-        elif argument == '-v' or argument == '--version':
-            print(pybart.__version__)
-        elif argument == '-l' or argument == '--list':
-            try:
-                stations = bart.get_stations()
-            except RuntimeError as error:
-                print(error)
-                exit(1)
+# Initialize argument parser
+parser = argparse.ArgumentParser(
+    description='Display real time BART estimates.',
+    epilog=(
+        'examples:\n'
+        '  bart mcar       get estimates for the MacArthur station\n'
+        '  bart embr cols  get estimates for the Embarcadero and Coliseum '
+        'stations'),
+    formatter_class=argparse.RawDescriptionHelpFormatter,
+)
+parser.add_argument(
+    '-l', '--list', action='store_true',
+    help='print list of station abbreviations and exit')
+parser.add_argument(
+    '-v', '--version', action='version', version=pybart.__version__)
+parser.add_argument(
+    'stations', nargs='*', default=settings.BART_STATIONS,
+    metavar='STN', help=(
+        'abbreviation of station to look up (default: BART_STATIONS '
+        'environment variable)'))
 
-            for station in stations:
-                print('{abbr} - {name}'.format(
-                    abbr=station[0], name=station[1]))
+# Parse arguments
+args = parser.parse_args()
 
-        # Unrecognized option
-        else:
-            print(
-                'bart: unrecognized option \'{option}\'\n'
-                'Try \'bart --help\' for more information.'.format(
-                    option=argument))
-            exit(1)
+# Show station abbreviations if requested
+if args.list:
+    try:
+        stations = bart.get_stations()
+    except RuntimeError as error:
+        print(error)
+        exit(1)
 
-        exit()
+    for station in stations:
+        print('{abbr} - {name}'.format(abbr=station[0], name=station[1]))
+    exit()
 
-# Use the default stations unless ones were specified
-try:
-    arguments = arguments or settings.BART_STATIONS.split(',')
-except AttributeError:
-    pass
-
-# Show the usage text if no stations were specified
-if not arguments:
-    print(settings.USAGE_TEXT)
+# Show help text if no stations were specified
+if not args.stations:
+    parser.print_help()
     exit(1)
 
 # Initialize window
@@ -99,7 +100,7 @@ def draw(prev_lines):
             window.fill_line(y, line, color_name='RED', bold=True)
 
     # Display stations
-    for station_abbr in arguments:
+    for station_abbr in args.stations:
         window.clear_lines(y + 1)
         y += 2
         station, departures = bart.get_departures(station_abbr)
