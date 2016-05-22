@@ -1,12 +1,16 @@
 from setuptools import setup
 
 
+with open('README.rst') as readme:
+    long_description = readme.read()
+
 setup(
     name='pybart',
     version=__import__('pybart').__version__,
     description=(
         'Real time BART (Bay Area Rapid Transit) information in your '
         'terminal!'),
+    long_description=long_description,
     author='Eric Wang',
     author_email='gnawrice@gmail.com',
     url='https://github.com/ericdwang/pybart',
