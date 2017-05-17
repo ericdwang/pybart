@@ -166,6 +166,12 @@ def main():
             print(error)
             exit(1)
 
-        char = window.getch()
+        try:
+            char = window.getch()
+
+        # Catch interrupt keys like Control-C so that the program doesn't exit
+        # without properly de-initializing curses
+        except KeyboardInterrupt:
+            break
 
     window.endwin()
