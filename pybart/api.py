@@ -16,7 +16,7 @@ Estimate = namedtuple('Estimate', ('color', 'length', 'minutes'))
 
 class BART(object):
     """Wrapper for the BART API."""
-    BART_URL = 'http://api.bart.gov/api/{api}.aspx?cmd={cmd}&key={key}'
+    BART_URL = 'https://api.bart.gov/api/{api}.aspx?cmd={cmd}&key={key}'
 
     ADVISORY_URL = ''
     DEPATURE_URL = ''

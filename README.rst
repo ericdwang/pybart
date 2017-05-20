@@ -81,7 +81,7 @@ The following (optional) environment variables can be used to configure pybart:
   arguments.
 - ``BART_API_KEY`` - the BART API key to use when fetching information. A
   public one is used by default, but you can get your own
-  `here <http://api.bart.gov/api/register.aspx>`_.
+  `here <https://api.bart.gov/api/register.aspx>`_.
 
 License
 =======
