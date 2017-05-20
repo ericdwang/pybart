@@ -54,22 +54,24 @@ Usage
 
 ::
 
-    usage: bart [-h] [-l] [-v] [STN [STN ...]]
+    usage: bart [-h] [-v] {list,est} ...
 
     Display real time BART estimates.
 
-    positional arguments:
-      STN            abbreviation of station to look up (default: BART_STATIONS
-                     environment variable)
-
     optional arguments:
       -h, --help     show this help message and exit
-      -l, --list     print list of station abbreviations and exit
       -v, --version  show program's version number and exit
 
+    commands:
+      {list,est}
+        list         show list of stations and their abbreviations
+        est          display estimates for specified stations
+
     examples:
-      bart mcar       get estimates for the MacArthur station
-      bart embr cols  get estimates for the Embarcadero and Coliseum stations
+      bart                get estimates for $BART_STATIONS
+      bart list           list all stations
+      bart est mcar       get estimates for MacArthur station
+      bart est embr cols  get estimates for Embarcadero and Coliseum stations
 
 Configuration
 =============
