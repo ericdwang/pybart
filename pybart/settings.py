@@ -12,3 +12,5 @@ try:
     BART_STATIONS = os.environ['BART_STATIONS'].split(',')
 except KeyError:
     BART_STATIONS = []
+
+BART_MAP_URL = 'https://www.bart.gov/stations'

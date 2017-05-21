@@ -1,5 +1,6 @@
 import argparse
 import sys
+import webbrowser
 
 import pybart
 from pybart import settings
@@ -21,11 +22,15 @@ def main():
         description='Display real time BART estimates.',
         epilog=(
             'examples:\n'
-            '  bart                get estimates for $BART_STATIONS\n'
-            '  bart list           list all stations\n'
-            '  bart est mcar       get estimates for MacArthur station\n'
-            '  bart est embr cols  get estimates for Embarcadero and Coliseum '
-            'stations'),
+            '  bart                 get estimates for $BART_STATIONS\n'
+            '  bart map             open station map\n'
+            '  bart list            list all stations\n'
+            '  bart est mcar        get estimates for MacArthur station\n'
+            '  bart est embr cols   get estimates for Embarcadero and '
+            'Coliseum stations\n'
+            '  bart fare conc sfia  get fare for a trip between Concord and '
+            'SFO stations'
+        ),
         formatter_class=argparse.RawDescriptionHelpFormatter,
     )
     parser.add_argument(
@@ -33,6 +38,10 @@ def main():
 
     # Add parsers for sub-commands
     subparsers = parser.add_subparsers(title='commands')
+
+    map_parser = subparsers.add_parser(
+        'map', help='open station map in web browser')
+    map_parser.set_defaults(func=open_map)
 
     list_parser = subparsers.add_parser(
         'list', help='show list of stations and their abbreviations')
@@ -42,6 +51,11 @@ def main():
         'est', help='display estimates for specified stations')
     estimate_parser.add_argument('stations', nargs='*', metavar='STN')
     estimate_parser.set_defaults(func=display_estimates)
+
+    fare_parser = subparsers.add_parser(
+        'fare', help='show fare for a trip between two stations')
+    fare_parser.add_argument('stations', nargs=2, metavar='STN')
+    fare_parser.set_defaults(func=show_fare)
 
     # If arguments were supplied parse them and run the appropriate function,
     # otherwise default to displaying estimates
@@ -55,17 +69,31 @@ def main():
         display_estimates(None, parser)
 
 
-def list_stations(args, parser):
-    bart = BART(api_key)
-
+def catch_errors_and_exit(function):
+    """Run the function and return its output, catching errors and exiting if
+    one occurs.
+    """
     try:
-        stations = bart.get_stations()
+        return function()
     except RuntimeError as error:
         print(error)
         exit(1)
 
-    for station in stations:
-        print('{abbr} - {name}'.format(abbr=station[0], name=station[1]))
+
+def open_map(args, parser):
+    webbrowser.open_new_tab(settings.BART_MAP_URL)
+
+
+def show_fare(args, parser):
+    fare = catch_errors_and_exit(
+        lambda: BART(api_key).get_fare(*args.stations))
+    print('$' + fare)
+
+
+def list_stations(args, parser):
+    stations = catch_errors_and_exit(lambda: BART(api_key).get_stations())
+    for abbrevation, name in stations:
+        print('{abbr} - {name}'.format(abbr=abbrevation, name=name))
 
 
 def display_estimates(args, parser):

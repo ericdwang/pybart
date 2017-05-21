@@ -54,24 +54,28 @@ Usage
 
 ::
 
-    usage: bart [-h] [-v] {list,est} ...
+    usage: bart [-h] [-v] {map,list,est,fare} ...
 
     Display real time BART estimates.
 
     optional arguments:
-      -h, --help     show this help message and exit
-      -v, --version  show program's version number and exit
+      -h, --help           show this help message and exit
+      -v, --version        show program's version number and exit
 
     commands:
-      {list,est}
-        list         show list of stations and their abbreviations
-        est          display estimates for specified stations
+      {map,list,est,fare}
+        map                open station map in web browser
+        list               show list of stations and their abbreviations
+        est                display estimates for specified stations
+        fare               show fare for a trip between two stations
 
     examples:
-      bart                get estimates for $BART_STATIONS
-      bart list           list all stations
-      bart est mcar       get estimates for MacArthur station
-      bart est embr cols  get estimates for Embarcadero and Coliseum stations
+      bart                 get estimates for $BART_STATIONS
+      bart map             open station map
+      bart list            list all stations
+      bart est mcar        get estimates for MacArthur station
+      bart est embr cols   get estimates for Embarcadero and Coliseum stations
+      bart fare conc sfia  get fare for a trip between Concord and SFO stations
 
 Configuration
 =============

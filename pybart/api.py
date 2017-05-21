@@ -20,6 +20,7 @@ class BART(object):
 
     ADVISORY_URL = ''
     DEPATURE_URL = ''
+    FARE_URL = ''
     STATION_URL = ''
 
     def __init__(self, key):
@@ -28,8 +29,9 @@ class BART(object):
             api='bsa', cmd='bsa', key=key) + '&date=today'
         self.DEPARTURE_URL = self.BART_URL.format(
             api='etd', cmd='etd', key=key) + '&orig={orig}'
-        self.STATION_URL = self.BART_URL.format(
-            api='stn', cmd='stns', key=key)
+        self.FARE_URL = self.BART_URL.format(
+            api='sched', cmd='fare', key=key) + '&orig={orig}&dest={dest}'
+        self.STATION_URL = self.BART_URL.format(api='stn', cmd='stns', key=key)
 
     def _get_xml_root(self, url):
         """Get the XML root of the response from the specified URL.
@@ -101,6 +103,12 @@ class BART(object):
             departures.append((destination, estimates))
 
         return (station_name, departures)
+
+    def get_fare(self, origin, destination):
+        """Get the fare for a trip between two stations."""
+        root = self._get_xml_root(self.FARE_URL.format(
+            orig=origin, dest=destination))
+        return root.find('trip').find('fare').text
 
     def get_stations(self):
         """Get the abbreviations and names for all stations."""
