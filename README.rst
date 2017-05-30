@@ -1,20 +1,18 @@
-======
 pybart
 ======
 
 .. image:: https://img.shields.io/pypi/v/pybart.svg
     :target: https://pypi.python.org/pypi/pybart
     :alt: Version
-.. image:: https://img.shields.io/pypi/dm/pybart.svg
-    :target: https://pypi.python.org/pypi/pybart
-    :alt: Downloads
 .. image:: https://img.shields.io/pypi/pyversions/pybart.svg
+    :target: http://py3readiness.org/
     :alt: Python versions
+.. image:: https://img.shields.io/pypi/wheel/pybart.svg
+    :target: http://pythonwheels.com/
+    :alt: Wheel status
 .. image:: https://img.shields.io/pypi/l/pybart.svg
     :target: https://opensource.org/licenses/BSD-3-Clause
     :alt: License
-
-----
 
 Real time BART (`Bay Area Rapid Transit <https://www.bart.gov/>`_) information
 in your terminal!
@@ -23,7 +21,7 @@ in your terminal!
     :alt: Screenshot
 
 Features
-========
+--------
 
 - Real time estimates and service advisories
 - `Curses-based <https://en.wikipedia.org/wiki/Curses_(programming_library)>`_
@@ -34,7 +32,7 @@ Features
 - No dependencies; built with only standard libraries
 
 Requirements
-============
+------------
 
 - Python 2.6+ or Python 3.0+ with the ``curses`` module installed (i.e. not
   Windows)
@@ -45,12 +43,12 @@ Requirements
     ``xterm-256color``
 
 Installation
-============
+------------
 
 ``pip install pybart``
 
 Usage
-=====
+-----
 
 ::
 
@@ -78,7 +76,7 @@ Usage
       bart fare conc sfia  get fare for a trip between Concord and SFO stations
 
 Configuration
-=============
+-------------
 
 The following (optional) environment variables can be used to configure pybart:
 
@@ -90,6 +88,6 @@ The following (optional) environment variables can be used to configure pybart:
   `here <https://api.bart.gov/api/register.aspx>`_.
 
 License
-=======
+-------
 
 `BSD 3-Clause <https://opensource.org/licenses/BSD-3-Clause>`_
