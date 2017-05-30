@@ -1,4 +1,5 @@
 import argparse
+import subprocess
 import sys
 import webbrowser
 
@@ -92,8 +93,40 @@ def show_fare(args, parser):
 
 def list_stations(args, parser):
     stations = catch_errors_and_exit(lambda: BART(api_key).get_stations())
-    for abbrevation, name in stations:
-        print('{abbr} - {name}'.format(abbr=abbrevation, name=name))
+    station_count = len(stations)
+
+    # Format stations with their abbreviations, and find the max station width
+    station_list = []
+    max_station_width = 0
+    for name, abbrevation in stations:
+        station = '{name} ({abbr})'.format(name=name, abbr=abbrevation)
+        station_list.append(station)
+        max_station_width = max(max_station_width, len(station))
+
+    # At least two spaces need to be between every station in a row
+    max_station_width += 2
+
+    # Note: in Python 3.3+ this can be replaced with shutil.get_terminal_size()
+    terminal_width = int(subprocess.check_output(('tput', 'cols')))
+
+    # Calculate columns and rows assuming all stations take up the max width
+    columns = max(terminal_width // max_station_width, 1)
+    rows = station_count // columns + (station_count % columns > 0)
+
+    row_stations = [[] for _ in range(rows)]
+    for column in range(0, station_count, rows):
+        # Find the max width for the whole column
+        column_stations = station_list[column:column + rows]
+        column_width = max(len(station) for station in column_stations) + 2
+
+        # Add each station in the column to their appropriate row with spacing
+        for row, station in enumerate(column_stations):
+            row_stations[row].append(
+                station + ' ' * (column_width - len(station)))
+
+    # Combine the stations in each row and print them
+    for row in row_stations:
+        print(''.join(row))
 
 
 def display_estimates(args, parser):

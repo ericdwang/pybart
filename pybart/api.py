@@ -117,6 +117,6 @@ class BART(object):
 
         for station in root.find('stations').iterfind('station'):
             stations.append((
-                station.find('abbr').text, station.find('name').text))
+                station.find('name').text, station.find('abbr').text))
 
         return stations
