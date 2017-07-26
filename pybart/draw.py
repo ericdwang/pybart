@@ -17,24 +17,33 @@ class EstimateDrawer(object):
         self.window = window
         self.wrapper = TextWrapper()
 
-    def _get_minutes_color(self, minutes):
-        """Get the color to use for the minutes estimate."""
-        try:
-            minutes = int(minutes.split()[0])
-            if minutes <= 5:
-                return 'RED'
-            elif minutes <= 10:
-                return 'YELLOW'
-        except ValueError:
-            return 'RED'
+    def _format_minutes(self, minutes):
+        """Return the minutes estimate formatted with its color."""
+        color = None
 
-    def _get_length_color(self, length):
-        """Get the color to use for the train length."""
+        try:
+            minutes = int(minutes)
+            if minutes <= 5:
+                color = 'RED'
+            elif minutes <= 10:
+                color = 'YELLOW'
+            minutes = str(minutes) + ' min'
+        except ValueError:
+            color = 'RED'
+
+        return (minutes + ' ', color)
+
+    def _format_length(self, length):
+        """Return the train length formatted with its color."""
+        color = None
         length = int(length)
+
         if length < 6:
-            return 'YELLOW'
+            color = 'YELLOW'
         elif length >= 8:
-            return 'GREEN'
+            color = 'GREEN'
+
+        return ('({length} car)'.format(length=length), color)
 
     def draw(self):
         """Draw the information on the terminal."""
@@ -45,14 +54,19 @@ class EstimateDrawer(object):
             time=datetime.now().strftime('%I:%M:%S %p')))
 
         # Display advisories (if any)
-        advisories = self.bart.get_advisories()
-        for advisory in advisories:
+        for advisory in self.bart.bsa.bsa().iterfind('bsa'):
+            # Ignore advisories that state there aren't any delays
+            try:
+                text = '{type} ({posted}) - {sms_text}'.format(
+                    posted=advisory.find('posted').text,
+                    type=advisory.find('type').text,
+                    sms_text=advisory.find('sms_text').text,
+                )
+            except AttributeError:
+                break
+
             self.window.clear_lines(y + 1)
             y += 1
-
-            text = '{type} ({posted}) - {sms_text}'.format(
-                posted=advisory.posted, type=advisory.type,
-                sms_text=advisory.sms_text)
 
             self.wrapper.width = self.window.width
             for line in self.wrapper.wrap(text):
@@ -63,29 +77,32 @@ class EstimateDrawer(object):
         for station_abbr in self.stations:
             self.window.clear_lines(y + 1)
             y += 2
-            station, departures = self.bart.get_departures(station_abbr)
-            self.window.fill_line(y, station, bold=True)
+            station = self.bart.etd.etd(station_abbr).find('station')
+            self.window.fill_line(y, station.find('name').text, bold=True)
 
             # Display all destinations for a station
-            for destination, estimates in departures:
+            for departure in station.iterfind('etd'):
                 y += 1
+                destination = departure.find('destination').text
                 self.window.addstr(y, 0, destination + ' ' * (
                     self.window.spacing - len(destination)))
                 x = self.window.spacing
 
                 # Display all estimates for a destination on the same line
-                for i, estimate in enumerate(estimates, start=1):
-                    self.window.addstr(y, x, '# ', color_name=estimate.color)
+                for i, estimate in enumerate(
+                        departure.iterfind('estimate'), start=1):
+                    self.window.addstr(
+                        y, x, '# ', color_name=estimate.find('color').text)
                     x += 2
 
-                    minutes = estimate.minutes + ' '
-                    color = self._get_minutes_color(estimate.minutes)
+                    minutes, color = self._format_minutes(
+                        estimate.find('minutes').text)
                     self.window.addstr(
                         y, x, minutes, color_name=color, bold=True)
                     x += len(minutes)
 
-                    length = '({length} car)'.format(length=estimate.length)
-                    color = self._get_length_color(estimate.length)
+                    length, color = self._format_length(
+                        estimate.find('length').text)
                     self.window.addstr(y, x, length, color_name=color)
                     x += len(length)
 

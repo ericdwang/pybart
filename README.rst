@@ -29,6 +29,8 @@ Features
 - View multiple stations at the same time
 - Colors indicating transit lines, estimate times, and train lengths
 - Ability to configure a default set of stations
+- Other non-TUI commands like opening a map and getting the fare for a trip
+- Includes a low-level Python wrapper for the full BART API
 - No dependencies; built with only standard libraries
 
 Requirements
@@ -86,6 +88,27 @@ The following (optional) environment variables can be used to configure pybart:
 - ``BART_API_KEY`` - the BART API key to use when fetching information. A
   public one is used by default, but you can get your own
   `here <https://api.bart.gov/api/register.aspx>`_.
+
+API
+---
+
+Even though it doesn't use everything, pybart includes a low-level Python
+wrapper for the full
+`BART API <https://api.bart.gov/docs/overview/index.aspx>`_ with
+``pybart.api.BART``. Every call returns the root element of the XML response
+using
+`ElementTree <https://docs.python.org/3/library/xml.etree.elementtree.html>`_.
+
+Example usage::
+
+    >>> from pybart.api import BART
+    >>> bart = BART()  # Uses the public API key by default
+    >>> root = bart.stn.stninfo('dbrk')
+    >>> station = root.find('stations').find('station')
+    >>> print(station.find('address').text + ', ' + station.find('city').text)
+    2160 Shattuck Avenue, Berkeley
+    >>> print(bart.version().find('apiVersion').text)
+    3.00
 
 License
 -------

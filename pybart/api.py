@@ -1,37 +1,34 @@
 try:
+    # Python 3 imports
+    from urllib.error import URLError
+    from urllib.parse import urlencode
+    from urllib.request import urlopen
+except ImportError:
+    # Python 2 imports
+    from urllib import urlencode
     from urllib2 import URLError
     from urllib2 import urlopen
-except ImportError:
-    from urllib.error import URLError
-    from urllib.request import urlopen
 
 import errno
-from collections import namedtuple
 from xml.etree import cElementTree
 
-
-Advisory = namedtuple('Advisory', ('posted', 'sms_text', 'type'))
-Estimate = namedtuple('Estimate', ('color', 'length', 'minutes'))
+from pybart import settings
 
 
-class BART(object):
-    """Wrapper for the BART API."""
-    BART_URL = 'https://api.bart.gov/api/{api}.aspx?cmd={cmd}&key={key}'
+api_key = settings.BART_API_KEY or settings.DEFAULT_API_KEY
 
-    ADVISORY_URL = ''
-    DEPATURE_URL = ''
-    FARE_URL = ''
-    STATION_URL = ''
+
+class BaseAPI(object):
+    """Base wrapper for the individual BART APIs."""
+    BART_URL = 'https://api.bart.gov/api/{api}.aspx'
+
+    api = ''
+    base_url = ''
+    key = ''
 
     def __init__(self, key):
-        """Set the URLs to use based on the API key given."""
-        self.ADVISORY_URL = self.BART_URL.format(
-            api='bsa', cmd='bsa', key=key) + '&date=today'
-        self.DEPARTURE_URL = self.BART_URL.format(
-            api='etd', cmd='etd', key=key) + '&orig={orig}'
-        self.FARE_URL = self.BART_URL.format(
-            api='sched', cmd='fare', key=key) + '&orig={orig}&dest={dest}'
-        self.STATION_URL = self.BART_URL.format(api='stn', cmd='stns', key=key)
+        self.base_url = self.BART_URL.format(api=self.api)
+        self.key = key
 
     def _get_xml_root(self, url):
         """Get the XML root of the response from the specified URL.
@@ -56,67 +53,143 @@ class BART(object):
 
         return root
 
-    def get_advisories(self):
-        """Get the current service advisories."""
-        root = self._get_xml_root(self.ADVISORY_URL)
-        advisories = []
 
-        for advisory in root.iterfind('bsa'):
-            # Ignore advisories that state there aren't any delays
-            try:
-                advisories.append(Advisory(
-                    posted=advisory.find('posted').text,
-                    sms_text=advisory.find('sms_text').text,
-                    type=advisory.find('type').text,
-                ))
-            except AttributeError:
-                break
+def api_method(method):
+    """Decorator for using method signatures to validate and make API calls."""
+    def wrapper(self, *args, **kwargs):
+        # Validate arguments
+        method(self, *args, **kwargs)
 
-        return advisories
+        # Convert positional arguments to keyword arguments
+        kwargs.update(zip(method.__code__.co_varnames[1:], args))
 
-    def get_departures(self, station_abbr):
-        """Get the current departure estimates for a station."""
-        root = self._get_xml_root(self.DEPARTURE_URL.format(orig=station_abbr))
-        station = root.find('station')
-        station_name = station.find('name').text
-        departures = []
+        # Use the method name for the command and add the API key
+        kwargs.update({'cmd': method.__name__, 'key': self.key})
 
-        for departure in station.iterfind('etd'):
-            destination = departure.find('destination').text
-            estimates = []
+        # Make the request and parse the XML response
+        return self._get_xml_root(self.base_url + '?' + urlencode(kwargs))
 
-            for estimate in departure.iterfind('estimate'):
-                minutes = estimate.find('minutes').text
+    return wrapper
 
-                # Estimates with less than 1 minute say 'Leaving' instead
-                try:
-                    minutes = str(int(minutes)) + ' min'
-                except ValueError:
-                    pass
 
-                estimates.append(Estimate(
-                    color=estimate.find('color').text,
-                    length=estimate.find('length').text,
-                    minutes=minutes,
-                ))
+class AdvisoryAPI(BaseAPI):
+    """API for advisories: https://api.bart.gov/docs/bsa/"""
+    api = 'bsa'
 
-            departures.append((destination, estimates))
+    @api_method
+    def bsa(self, orig=None):
+        pass
 
-        return (station_name, departures)
+    @api_method
+    def count(self):
+        pass
 
-    def get_fare(self, origin, destination):
-        """Get the fare for a trip between two stations."""
-        root = self._get_xml_root(self.FARE_URL.format(
-            orig=origin, dest=destination))
-        return root.find('trip').find('fare').text
+    @api_method
+    def elev(self):
+        pass
 
-    def get_stations(self):
-        """Get the abbreviations and names for all stations."""
-        root = self._get_xml_root(self.STATION_URL)
-        stations = []
 
-        for station in root.find('stations').iterfind('station'):
-            stations.append((
-                station.find('name').text, station.find('abbr').text))
+class EstimateAPI(BaseAPI):
+    """API for real time estimates: https://api.bart.gov/docs/etd/"""
+    api = 'etd'
 
-        return stations
+    @api_method
+    def etd(self, orig, plat=None, dir=None):
+        pass
+
+
+class RouteAPI(BaseAPI):
+    """API for route information: https://api.bart.gov/docs/route/"""
+    api = 'route'
+
+    @api_method
+    def routeinfo(self, route, sched=None, date=None):
+        pass
+
+    @api_method
+    def routes(self, sched=None, date=None):
+        pass
+
+
+class ScheduleAPI(BaseAPI):
+    """API for schedule information: https://api.bart.gov/docs/sched/"""
+    api = 'sched'
+
+    @api_method
+    def arrive(self, orig, dest, time=None, date=None, b=None, a=None, l=None):
+        pass
+
+    @api_method
+    def depart(self, orig, dest, time=None, date=None, b=None, a=None, l=None):
+        pass
+
+    @api_method
+    def fare(self, orig, dest):
+        pass
+
+    @api_method
+    def holiday(self):
+        pass
+
+    @api_method
+    def routesched(self, route, date=None, time=None, l=None, sched=None):
+        pass
+
+    @api_method
+    def scheds(self):
+        pass
+
+    @api_method
+    def special(self, l=None):
+        pass
+
+    @api_method
+    def stnsched(self, orig, date=None):
+        pass
+
+
+class StationAPI(BaseAPI):
+    """API for station information: https://api.bart.gov/docs/stn/"""
+    api = 'stn'
+
+    @api_method
+    def stnaccess(self, orig, l=None):
+        pass
+
+    @api_method
+    def stninfo(self, orig):
+        pass
+
+    @api_method
+    def stns(self):
+        pass
+
+
+class VersionAPI(BaseAPI):
+    """API for version information: https://api.bart.gov/docs/version/"""
+    api = 'version'
+
+    def __call__(self):
+        """Allow calling the class directly since the version API has no
+        parameters: https://api.bart.gov/docs/version/version.aspx
+        """
+        return self._get_xml_root(self.base_url)
+
+
+class BART(object):
+    """Wrapper for the BART API."""
+    bsa = None
+    etd = None
+    route = None
+    sched = None
+    stn = None
+    version = None
+
+    def __init__(self, key=api_key):
+        """Initialize the individual APIs with the API key."""
+        self.bsa = AdvisoryAPI(key)
+        self.etd = EstimateAPI(key)
+        self.route = RouteAPI(key)
+        self.sched = ScheduleAPI(key)
+        self.stn = StationAPI(key)
+        self.version = VersionAPI(key)

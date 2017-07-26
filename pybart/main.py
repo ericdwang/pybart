@@ -10,9 +10,6 @@ from pybart.draw import EstimateDrawer
 from pybart.utils import Window
 
 
-api_key = settings.BART_API_KEY or settings.DEFAULT_API_KEY
-
-
 def main():
     """Parse arguments and run the appropriate function.
 
@@ -86,22 +83,23 @@ def open_map(args, parser):
 
 
 def show_fare(args, parser):
-    fare = catch_errors_and_exit(
-        lambda: BART(api_key).get_fare(*args.stations))
-    print('$' + fare)
+    root = catch_errors_and_exit(lambda: BART().sched.fare(*args.stations))
+    print('$' + root.find('trip').find('fare').text)
 
 
 def list_stations(args, parser):
-    stations = catch_errors_and_exit(lambda: BART(api_key).get_stations())
-    station_count = len(stations)
+    root = catch_errors_and_exit(lambda: BART().stn.stns())
 
     # Format stations with their abbreviations, and find the max station width
-    station_list = []
+    stations = []
     max_station_width = 0
-    for name, abbrevation in stations:
-        station = '{name} ({abbr})'.format(name=name, abbr=abbrevation)
-        station_list.append(station)
-        max_station_width = max(max_station_width, len(station))
+    for station in root.find('stations').iterfind('station'):
+        station_name = '{name} ({abbr})'.format(
+            name=station.find('name').text, abbr=station.find('abbr').text)
+        stations.append(station_name)
+        max_station_width = max(max_station_width, len(station_name))
+
+    station_count = len(stations)
 
     # At least two spaces need to be between every station in a row
     max_station_width += 2
@@ -116,7 +114,7 @@ def list_stations(args, parser):
     row_stations = [[] for _ in range(rows)]
     for column in range(0, station_count, rows):
         # Find the max width for the whole column
-        column_stations = station_list[column:column + rows]
+        column_stations = stations[column:column + rows]
         column_width = max(len(station) for station in column_stations) + 2
 
         # Add each station in the column to their appropriate row with spacing
@@ -142,9 +140,8 @@ def display_estimates(args, parser):
         exit(1)
 
     # Initialize variables
-    bart = BART(api_key)
     window = Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS)
-    drawer = EstimateDrawer(bart, stations, window)
+    drawer = EstimateDrawer(BART(), stations, window)
     char = ''
 
     # Keep running until 'q' is pressed to exit or an error occurs
