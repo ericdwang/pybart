@@ -139,28 +139,15 @@ def display_estimates(args, parser):
         parser.print_help()
         exit(1)
 
-    # Initialize variables
-    window = Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS)
-    drawer = EstimateDrawer(BART(), stations, window)
-    char = ''
+    with Window(settings.REFRESH_INTERVAL, settings.TOTAL_COLUMNS) as window:
+        drawer = EstimateDrawer(BART(), stations, window)
+        char = ''
 
-    # Keep running until 'q' is pressed to exit or an error occurs
-    while char != 'q':
-        try:
-            drawer.draw()
-        except RuntimeWarning:
-            pass
-        except RuntimeError as error:
-            window.endwin()
-            print(error)
-            exit(1)
+        # Keep running until 'q' is pressed to exit or an error occurs
+        while char != 'q':
+            try:
+                drawer.draw()
+            except RuntimeWarning:
+                pass
 
-        try:
             char = window.getch()
-
-        # Catch interrupt keys like Control-C so that the program doesn't exit
-        # without properly de-initializing curses
-        except KeyboardInterrupt:
-            break
-
-    window.endwin()

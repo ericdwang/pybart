@@ -10,6 +10,7 @@ except ImportError:
     from urllib2 import urlopen
 
 import errno
+from contextlib import closing
 from xml.etree import cElementTree
 
 from pybart import settings
@@ -37,9 +38,11 @@ class BaseAPI(object):
         error in the response.
         """
         try:
-            response = urlopen(url)
-            root = cElementTree.fromstring(response.read())
-            response.close()
+            # Note: closing isn't necessary in Python 3 because urlopen returns
+            # a context manager already
+            with closing(urlopen(url)) as response:
+                root = cElementTree.fromstring(response.read())
+
         except URLError as error:
             # Treat interrupted signal calls as warnings
             if error.reason.errno == errno.EINTR:

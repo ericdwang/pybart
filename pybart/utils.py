@@ -39,6 +39,21 @@ class Window(object):
 
         self._update_dimensions()
 
+    def __enter__(self):
+        return self
+
+    def __exit__(self, exception_type, exception_value, traceback):
+        """Properly de-initialize curses when exiting the runtime context."""
+        self.endwin()
+
+        # If an exception occurred (ignoring interrupt keys like Control-C),
+        # print it and exit the program
+        if exception_type and exception_type != KeyboardInterrupt:
+            print(exception_value)
+            exit(1)
+
+        return True
+
     def _get_color(self, color_name):
         """Get the color to use based on the name given."""
         if not color_name:
