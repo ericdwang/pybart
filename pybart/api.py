@@ -10,6 +10,7 @@ except ImportError:
     from urllib2 import urlopen
 
 import errno
+import json
 from contextlib import closing
 from xml.etree import cElementTree
 
@@ -25,14 +26,16 @@ class BaseAPI(object):
 
     api = ''
     base_url = ''
+    json_format = False
     key = ''
 
-    def __init__(self, key):
+    def __init__(self, key, json_format):
         self.base_url = self.BART_URL.format(api=self.api)
         self.key = key
+        self.json_format = json_format
 
-    def _get_xml_root(self, url):
-        """Get the XML root of the response from the specified URL.
+    def _get_response_root(self, url):
+        """Get the root of the response from the specified URL.
 
         Raise a RuntimeError if there's no Internet connection or there was an
         error in the response.
@@ -41,7 +44,7 @@ class BaseAPI(object):
             # Note: closing isn't necessary in Python 3 because urlopen returns
             # a context manager already
             with closing(urlopen(url)) as response:
-                root = cElementTree.fromstring(response.read())
+                body = response.read()
 
         except URLError as error:
             # Treat interrupted signal calls as warnings
@@ -49,12 +52,16 @@ class BaseAPI(object):
                 raise RuntimeWarning
             raise RuntimeError('No Internet connection.')
 
+        # Note: the BART API returns XML for errors (even when requesting JSON)
+        # so all responses need to be checked for XML
         try:
-            raise RuntimeError(root.find('.//error').find('details').text)
-        except AttributeError:
-            pass
-
-        return root
+            root = cElementTree.fromstring(body)
+            try:
+                raise RuntimeError(root.find('.//error').find('details').text)
+            except AttributeError:  # XML with no errors
+                return root
+        except cElementTree.ParseError:  # JSON
+            return json.loads(body)['root']
 
 
 def api_method(method):
@@ -66,11 +73,13 @@ def api_method(method):
         # Convert positional arguments to keyword arguments
         kwargs.update(zip(method.__code__.co_varnames[1:], args))
 
-        # Use the method name for the command and add the API key
+        # Use the method name for the command and add other parameters
         kwargs.update({'cmd': method.__name__, 'key': self.key})
+        if self.json_format:
+            kwargs['json'] = 'y'
 
-        # Make the request and parse the XML response
-        return self._get_xml_root(self.base_url + '?' + urlencode(kwargs))
+        # Make the request and parse the response
+        return self._get_response_root(self.base_url + '?' + urlencode(kwargs))
 
     return wrapper
 
@@ -176,7 +185,7 @@ class VersionAPI(BaseAPI):
         """Allow calling the class directly since the version API has no
         parameters: https://api.bart.gov/docs/version/version.aspx
         """
-        return self._get_xml_root(self.base_url)
+        return self._get_response_root(self.base_url)
 
 
 class BART(object):
@@ -188,11 +197,12 @@ class BART(object):
     stn = None
     version = None
 
-    def __init__(self, key=api_key):
+    def __init__(self, key=api_key, json_format=False):
         """Initialize the individual APIs with the API key."""
-        self.bsa = AdvisoryAPI(key)
-        self.etd = EstimateAPI(key)
-        self.route = RouteAPI(key)
-        self.sched = ScheduleAPI(key)
-        self.stn = StationAPI(key)
-        self.version = VersionAPI(key)
+        args = (key, json_format)
+        self.bsa = AdvisoryAPI(*args)
+        self.etd = EstimateAPI(*args)
+        self.route = RouteAPI(*args)
+        self.sched = ScheduleAPI(*args)
+        self.stn = StationAPI(*args)
+        self.version = VersionAPI(*args)

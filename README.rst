@@ -95,9 +95,11 @@ API
 Even though it doesn't use everything, pybart includes a low-level Python
 wrapper for the full
 `BART API <https://api.bart.gov/docs/overview/index.aspx>`_ with
-``pybart.api.BART``. Every call returns the root element of the XML response
-using
+``pybart.api.BART``. Every call by default returns the root element of the XML
+response using
 `ElementTree <https://docs.python.org/3/library/xml.etree.elementtree.html>`_.
+JSON is also supported but the format is currently in
+`beta <https://api.bart.gov/docs/overview/output.aspx>`_.
 
 Example usage::
 
@@ -108,7 +110,12 @@ Example usage::
     >>> print(station.find('address').text + ', ' + station.find('city').text)
     2160 Shattuck Avenue, Berkeley
     >>> print(bart.version().find('apiVersion').text)
-    3.00
+    3.10
+    >>> bart = BART(json_format=True)  # Now with JSON
+    >>> root = bart.stn.stninfo('dbrk')
+    >>> station = root['stations']['station']
+    >>> print(station['address'] + ', ' + station['city'])
+    2160 Shattuck Avenue, Berkeley
 
 License
 -------
